@@ -39,12 +39,25 @@ function love.update(dt)
 	if snakeTimer >= SNAKE_SPEED then
 		-- Move snake 1 tile in x direction
 		if snakeMoving == "r" then
+			-- Loop around boundaries
+			if snakeX == MAX_TILES_X then
+				snakeX = 0
+			end
 			snakeX = snakeX + 1
 		elseif snakeMoving == "l" then
+			if snakeX == 1 then
+				snakeX = MAX_TILES_X + 1
+			end
 			snakeX = snakeX - 1
 		elseif snakeMoving == "u" then
+			if snakeY == 1 then
+				snakeY = MAX_TILES_Y + 1
+			end
 			snakeY = snakeY - 1
 		elseif snakeMoving == "d" then
+			if snakeY == MAX_TILES_Y then
+				snakeY = 0
+			end
 			snakeY = snakeY + 1
 		end
 
@@ -84,9 +97,9 @@ function drawGrid()
 			if tileGrid[y][x] == TILE_EMPTY then
 
 				-- Set grid's color
-				love.graphics.setColor(1, 1, 1)
-				love.graphics.rectangle("line", (x - 1) * TILE_SIZE, (y - 1) * TILE_SIZE, 
-					TILE_SIZE, TILE_SIZE)
+				-- love.graphics.setColor(1, 1, 1)
+				-- love.graphics.rectangle("line", (x - 1) * TILE_SIZE, (y - 1) * TILE_SIZE, 
+				-- 	TILE_SIZE, TILE_SIZE)
 			
 			elseif tileGrid[y][x] == TILE_APPLE then
 				
