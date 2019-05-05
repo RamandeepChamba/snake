@@ -29,6 +29,8 @@ local snakeTimer = 0
 local snakeTiles = {
 	-- Head
 	{snakeX, snakeY}
+	-- Body goes here
+	-- Tail at the very end
 }
 
 function love.load()
@@ -78,7 +80,7 @@ function love.update(dt)
 			snakeY = snakeY + 1
 		end
 
-		-- Push a new head element 
+		-- Push a new head element
 		-- onto the snake data structure
 		table.insert(snakeTiles, 1, {snakeX, snakeY})
 
@@ -88,7 +90,7 @@ function love.update(dt)
 			score = score + 1
 			-- insert new apple
 			insertApple()
-			
+
 		else
 			-- Remove tail
 			local tail = snakeTiles[#snakeTiles]
@@ -104,6 +106,10 @@ function love.update(dt)
 			tileGrid[priorHeadY][priorHeadX] = TILE_SNAKE_BODY
 		end
 
+		-- Check if snake bit it's tail
+		if tileGrid[snakeY][snakeX] == TILE_SNAKE_BODY then
+			print("Game over")
+		end
 		-- Draw snake head
 		tileGrid[snakeY][snakeX] = TILE_SNAKE_HEAD
 
@@ -116,24 +122,24 @@ function love.keypressed(key)
 	if key == "escape" then
 		love.event.quit()
 	end
-	
+
 	-- Snake movement
-	if key == "right" then
+	if (key == "right" and not(snakeMoving == "l")) then
 		snakeMoving = "r"
-	elseif key == "left" then
+	elseif (key == "left" and not(snakeMoving == "r")) then
 		snakeMoving = "l"
-	elseif key == "up" then
+	elseif (key == "up" and not(snakeMoving == "d")) then
 		snakeMoving = "u"
-	elseif key == "down" then
+	elseif (key == "down" and not(snakeMoving == "u")) then
 		snakeMoving = "d"
 	end
 end
 
 function love.draw()
 	drawGrid()
-	
+
 	love.graphics.setColor(1, 1, 1)
-	love.graphics.print('Score: ' .. tostring(score), 10, 10)
+	love.graphics.print("Score: " .. tostring(score), 10, 10)
 end
 
 function drawGrid()
@@ -145,29 +151,29 @@ function drawGrid()
 
 				-- Set grid's color
 				--[[ love.graphics.setColor(1, 1, 1)
-				love.graphics.rectangle("line", (x - 1) * TILE_SIZE, (y - 1) * TILE_SIZE, 
+				love.graphics.rectangle("line", (x - 1) * TILE_SIZE, (y - 1) * TILE_SIZE,
 					TILE_SIZE, TILE_SIZE)
 					]]
-			
+
 			elseif tileGrid[y][x] == TILE_APPLE then
-				
+
 				-- Set apple's color
 				love.graphics.setColor(1, 0, 0)
-				love.graphics.rectangle("fill", (x - 1) * TILE_SIZE, (y - 1) * TILE_SIZE, 
+				love.graphics.rectangle("fill", (x - 1) * TILE_SIZE, (y - 1) * TILE_SIZE,
 					TILE_SIZE, TILE_SIZE)
 
 			elseif tileGrid[y][x] == TILE_SNAKE_HEAD then
-				
+
 				-- Set snake's head color
 				love.graphics.setColor(0, 1, 0.5, 1)
-				love.graphics.rectangle("fill", (x - 1) * TILE_SIZE, (y - 1) * TILE_SIZE, 
+				love.graphics.rectangle("fill", (x - 1) * TILE_SIZE, (y - 1) * TILE_SIZE,
 					TILE_SIZE, TILE_SIZE)
-			
+
 			elseif tileGrid[y][x] == TILE_SNAKE_BODY then
-				
+
 				-- Set snake's head color
 				love.graphics.setColor(0, 0.5, 0, 1)
-				love.graphics.rectangle("fill", (x - 1) * TILE_SIZE, (y - 1) * TILE_SIZE, 
+				love.graphics.rectangle("fill", (x - 1) * TILE_SIZE, (y - 1) * TILE_SIZE,
 					TILE_SIZE, TILE_SIZE)
 			end
 		end
@@ -180,7 +186,7 @@ function initGrid()
 		table.insert(tileGrid, {})
 		for x = 1, MAX_TILES_X do
 			-- Insert col(value) in a row
-			table.insert(tileGrid[y], TILE_EMPTY) 
+			table.insert(tileGrid[y], TILE_EMPTY)
 		end
 	end
 
@@ -189,7 +195,12 @@ function initGrid()
 end
 
 function insertApple()
-	-- Insert apple in random tile
+	-- Choose random tile to insert apple
 	local randomX, randomY = math.random(MAX_TILES_X), math.random(MAX_TILES_Y)
+	-- Keep finding until we reach an empty tile
+	while (not(tileGrid[randomY][randomX] == TILE_EMPTY)) do
+		randomX, randomY = math.random(MAX_TILES_X), math.random(MAX_TILES_Y)
+	end
+	-- Insert apple
 	tileGrid[randomY][randomX] = TILE_APPLE
 end
