@@ -13,25 +13,19 @@ TILE_APPLE = 3
 -- Time in seconds in which snake is going to move 1 tile
 SNAKE_SPEED = 0.1
 
+local smallFont = love.graphics.newFont(16)
 local largeFont = love.graphics.newFont(32)
+local veryLargeFont = love.graphics.newFont(64)
 
--- Score
-local score = 0
-
--- Tables are 1 indexed
-local tileGrid = {}
-
-local snakeX, snakeY = 1, 1
-local snakeMoving = "r"
-local snakeTimer = 0
-
--- Snake data structure
-local snakeTiles = {
-	-- Head
-	{snakeX, snakeY}
-	-- Body goes here
-	-- Tail at the very end
-}
+-- Game variables
+local score,
+	-- Game status
+	gameOver,
+	-- Tables are 1 indexed
+	tileGrid,
+	snakeX, snakeY, snakeMoving, snakeTimer,
+	-- Snake data structure
+	snakeTiles
 
 function love.load()
 	love.window.setTitle("Snake")
@@ -40,15 +34,17 @@ function love.load()
 		fullscreen = false
 	})
 
-	-- math.random don't work without this
-	math.randomseed(os.time())
-	-- Initialize grid
-	initGrid()
-	-- Init snake
-	tileGrid[snakeTiles[1][2]][snakeTiles[1][1]] = TILE_SNAKE_HEAD
+	-- Initialize game
+	initGame()
 end
 
 function love.update(dt)
+
+	-- Check game status
+	if gameOver then
+		return
+	end
+
 	snakeTimer = snakeTimer + dt
 
 	-- Snake head's position before updating
@@ -108,7 +104,7 @@ function love.update(dt)
 
 		-- Check if snake bit it's tail
 		if tileGrid[snakeY][snakeX] == TILE_SNAKE_BODY then
-			print("Game over")
+			gameOver = true
 		end
 		-- Draw snake head
 		tileGrid[snakeY][snakeX] = TILE_SNAKE_HEAD
@@ -121,6 +117,11 @@ function love.keypressed(key)
 	-- Quit game
 	if key == "escape" then
 		love.event.quit()
+	end
+
+	-- Restart game
+	if key == "return" and gameOver then
+		initGame()
 	end
 
 	-- Snake movement
@@ -136,10 +137,17 @@ function love.keypressed(key)
 end
 
 function love.draw()
+	-- Grid
 	drawGrid()
-
+	-- Score
 	love.graphics.setColor(1, 1, 1)
 	love.graphics.print("Score: " .. tostring(score), 10, 10)
+	-- Game over screen
+	if gameOver then
+		drawGameOver()
+	end
+	-- Reset font
+	love.graphics.setFont(largeFont)
 end
 
 function drawGrid()
@@ -178,6 +186,44 @@ function drawGrid()
 			end
 		end
 	end
+end
+
+function drawGameOver()
+	love.graphics.setFont(veryLargeFont)
+	love.graphics.setColor(1, 1, 1)
+	love.graphics.print("Game Over",
+		WINDOW_WIDTH / 2 - (veryLargeFont:getWidth("Game Over") / 2),
+		WINDOW_HEIGHT / 2 - (veryLargeFont:getHeight() / 2)
+	)
+
+	love.graphics.setFont(smallFont)
+	love.graphics.setColor(.8, .8, .8)
+	love.graphics.print("Press [Enter] to play again",
+		WINDOW_WIDTH / 2 - (smallFont:getWidth("Press [Enter] to play again") / 2),
+		WINDOW_HEIGHT / 2 + (veryLargeFont:getHeight() / 2)
+	)
+end
+
+function initGame()
+	-- Game variables
+	score = 0
+	gameOver = false
+	tileGrid = {}
+	snakeX, snakeY = 1, 1
+	snakeMoving = "r"
+	snakeTimer = 0
+	snakeTiles = {
+		-- Head
+		{snakeX, snakeY}
+		-- Body goes here
+		-- Tail at the very end
+	}
+	-- math.random don't work without this
+	math.randomseed(os.time())
+	-- Initialize grid
+	initGrid()
+	-- Init snake
+	tileGrid[snakeTiles[1][2]][snakeTiles[1][1]] = TILE_SNAKE_HEAD
 end
 
 function initGrid()
